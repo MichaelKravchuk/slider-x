@@ -43,7 +43,7 @@ SliderXPrototype.createdCallback = function() {
 
 		var activeSlide = self.querySelector('slide-x.active');
 		if(activeSlide){
-			_activeSlideIdx = Array.prototype.indexOf.call(self.querySelector("slider-x-content").children, self) + 1
+			_activeSlideIdx = Array.prototype.indexOf.call(self.querySelector("slider-x-content").children, self) + 1;
 		} else {
 			self.querySelector('slide-x').classList.add("active");
 		}
@@ -102,6 +102,12 @@ SliderXPrototype.createdCallback = function() {
         	_isActive = false;
 
         }, _time);
+
+        var SliderXIndicators = document.querySelector("slider-x-indicators[data-id='" + self.getAttribute("data-id") + "']");
+        if(SliderXIndicators){
+            SliderXIndicators.querySelector("slider-x-indicator.active").classList.remove('active');
+            SliderXIndicators.querySelector("slider-x-indicator:nth-child(" + index + ")").classList.add('active');
+        }
 
 		return index;
 	};
@@ -376,6 +382,7 @@ SliderXIndicatorsPrototype.createdCallback = function() {
 		for(var i = 0; i < _sliderX.slideCount; i++){
 			self.addIndicator();
 		}
+        self.querySelector("slider-x-indicator:nth-child(" + _sliderX.getIndex() + ")").classList.add('active');
 	}
 
 	// end INIT ----------------------------------------
