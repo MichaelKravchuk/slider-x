@@ -1,0 +1,19 @@
+{
+  "name": "slider-x",
+  "version": "1.0.0",
+  "description": "custom tag slider-x",
+  "main": "ct-slider-x.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MichaelKravchuk/slider-x.git"
+  },
+  "author": "Michael Kravchuk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MichaelKravchuk/slider-x/issues"
+  },
+  "homepage": "https://github.com/MichaelKravchuk/slider-x#readme"
+}
