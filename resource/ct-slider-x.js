@@ -5,9 +5,11 @@ SliderXPrototype.createdCallback = function() {
     // PRIVATE VARS ------------------------------------
 
 	var _globalName = this.getAttribute('data-id'),
-		_activeSlideIdx = 1,
-		_nextActiveIdx = 1,
-		_isActive = false;
+        _countAactiveSlide = this.getAttribute('data-count') || 1,
+		_activeSlidesIdx = [],
+        _nextActiveIdx = 1,
+		_prevActiveIdx = 1,
+		_isActive = false,
 		_time = 500; //ms
 
 
@@ -41,12 +43,21 @@ SliderXPrototype.createdCallback = function() {
 			console.error(e.name + ': ' + e.message, self);
 		}
 
-		var activeSlide = self.querySelector('slide-x.active');
-		if(activeSlide){
-			_activeSlideIdx = Array.prototype.indexOf.call(self.querySelector("slider-x-content").children, self) + 1;
+		var activeSlides = self.querySelectorAll('slide-x.active');
+		if(activeSlides.length != 0){
+            _activeSlidesIdx = [];
+
+            Array.prototype.forEach.call(activeSlides, function(item){
+                _activeSlidesIdx.push(Array.prototype.indexOf.call(self.querySelector("slider-x-content").children, item) + 1);
+            });
 		} else {
-			self.querySelector('slide-x').classList.add("active");
-		}
+            _activeSlidesIdx = _range(1, _countAactiveSlide),
+
+            Array.prototype.forEach.call(_activeSlidesIdx, function(index, i){
+                self.querySelector('slide-x:nth-child(' + index + ')').classList.add("active");
+                self.querySelector('slide-x:nth-child(' + index + ')').style.left = 100 * i / _countAactiveSlide + '%';
+            });
+        }
 
 		self.setTime(_time);
 	}
@@ -57,86 +68,124 @@ SliderXPrototype.createdCallback = function() {
 
 	// METHODS -----------------------------------------
 
-	this.setActive = function(index) {
+	this.setActive = function(type) {
         if(_isActive) return -1;
+        if(type == _first()) return 0;
+        
+        if(type == 'next'){
+            _prevActiveIdx = _first();
+            _pushNextIdx();
+        } else if(type == 'prev'){
+            _prevActiveIdx = _last();
+            _pushPrevIdx();
+        } else if(Number.isInteger(type)){
+            _activeSlidesIdx = _range(type, _countAactiveSlide);
+            type = type > _first() ? 'next' : 'prev';
+            _activeSlidesIdx = type > _first() ? _first() : _last(); 
+        } else return -1;
 
-        self.dispatchEvent( _setActive_(index) );
+        self.dispatchEvent( _setActive_( _first() ) );
 
     	_isActive = true;
 
-        if(index == _activeSlideIdx) return 0;
+        var classType = undefined;
+        var direction = 1;
 
+        if(type == 'next'){
+            direction = -1;
+            classType = "to-left";
 
-        var cycle = 0;
+            self.querySelector('slide-x:nth-of-type(' + _prevActiveIdx + ')').style.left = direction * 100 / _countAactiveSlide + '%';
+            self.querySelector('slide-x:nth-of-type(' + _last() + ')').classList.add(classType);
 
-        if(index > self.slideCount){
-        	index = 1;
-        	cycle = 1;
-        } else if(index < 1){
-        	index = self.slideCount;
-        	cycle = 2;
+            Array.prototype.forEach.call(_activeSlidesIdx, function(item, i){
+                if(i != _activeSlidesIdx.length -1)
+                self.querySelector('slide-x:nth-of-type(' + item + ')').style.left = 100 * i / _countAactiveSlide + '%';
+            });
+
+            setTimeout(function() {
+                self.querySelector('slide-x:nth-of-type(' + _last() + ')').classList.add("next");
+                self.querySelector('slide-x:nth-of-type(' + _last() + ')').style.left = 100 - (100 / _countAactiveSlide) + '%';
+            }, 50);
+
+        } else {
+            direction = 1;
+            classType = "to-right";
+
+            self.querySelector('slide-x:nth-of-type(' + _prevActiveIdx + ')').style.left = '100%';
+            self.querySelector('slide-x:nth-of-type(' + _first() + ')').classList.add(classType);
+
+            Array.prototype.forEach.call(_activeSlidesIdx, function(item, i){
+                if(i != 0)
+                self.querySelector('slide-x:nth-of-type(' + item + ')').style.left = 100 * i / _countAactiveSlide + '%';
+            });
+
+            setTimeout(function() {
+                self.querySelector('slide-x:nth-of-type(' + _first() + ')').classList.add("next");
+                self.querySelector('slide-x:nth-of-type(' + _first() + ')').style.left = '0%';
+            }, 50);
         }
 
-        if( (index > _activeSlideIdx && cycle == 0) || cycle == 1 ){
-    		self.querySelector('slide-x:nth-of-type(' + index + ')').classList.add("to-left");
-    		self.querySelector('slide-x:nth-of-type(' + _activeSlideIdx + ')').classList.add("to-left");
-    	} else {
-    		self.querySelector('slide-x:nth-of-type(' + index + ')').classList.add("to-right");
-    		self.querySelector('slide-x:nth-of-type(' + _activeSlideIdx + ')').classList.add("to-right");
-    	}
-
-    	setTimeout(function() {
-    		self.querySelector('slide-x:nth-of-type(' + index + ')').classList.add("next");
-    	}, 1);
 
 
         setTimeout(function() {
-        	self.querySelector('slide-x:nth-of-type(' + index + ')').classList.remove("to-left");
-        	self.querySelector('slide-x:nth-of-type(' + index + ')').classList.remove("to-right");
-        	self.querySelector('slide-x:nth-of-type(' + _activeSlideIdx + ')').classList.remove("to-left");
-        	self.querySelector('slide-x:nth-of-type(' + _activeSlideIdx + ')').classList.remove("to-right");
-    		self.querySelector('slide-x:nth-of-type(' + index + ')').classList.remove("next");
-    		self.querySelector('slide-x.active').classList.remove("active");
-    		self.querySelector('slide-x:nth-of-type(' + index + ')').classList.add("active");
-        	_activeSlideIdx = index;
+            Array.prototype.forEach.call(self.querySelectorAll('slide-x'), function(item, i){
+                item.classList.remove(classType);
+                item.classList.remove('active');
+                item.classList.remove('next');
+                if( _activeSlidesIdx.indexOf(i+1) == -1 ){
+                    item.style.left = "";
+                }
+            });
+
+            Array.prototype.forEach.call(_activeSlidesIdx, function(index){
+                self.querySelector('slide-x:nth-of-type(' + index + ')').classList.add("active");
+            });
+
         	_isActive = false;
 
         }, _time);
 
         var SliderXIndicators = document.querySelector("slider-x-indicators[data-id='" + self.getAttribute("data-id") + "']");
         if(SliderXIndicators){
-            SliderXIndicators.querySelector("slider-x-indicator.active").classList.remove('active');
-            SliderXIndicators.querySelector("slider-x-indicator:nth-child(" + index + ")").classList.add('active');
+            Array.prototype.forEach.call(SliderXIndicators.querySelectorAll("slider-x-indicator.active"), function(item){
+                item.classList.remove('active');
+            });
+            Array.prototype.forEach.call(_activeSlidesIdx, function(item){
+                SliderXIndicators.querySelector("slider-x-indicator:nth-child(" + item + ")").classList.add('active');
+            });
         }
 
-		return index;
+		return _activeSlidesIdx;
 	};
 
 
 
 	this.next = function() {
-        return self.setActive(_activeSlideIdx + 1);
+        return self.setActive("next");
     };
 
 
 
 	this.prev = function() {
-		return self.setActive(_activeSlideIdx - 1);
+		return self.setActive("prev");
 	};
 
 
 
-    this.getIndex = function() {
-        return _activeSlideIdx;
+    this.getIndexes = function() {
+        return _activeSlidesIdx;
     };
 
 
 
     this.setTime = function(time) {
     	_time = time;
-    	_setStyle('slider-x slide-x.active{ transition: all ' + (_time/1000) +'s }');
-    	_setStyle('slider-x slide-x.to-left.next{ transition: all ' + (_time/1000) +'s }');
-    	_setStyle('slider-x slide-x.to-right.next{ transition: all ' + (_time/1000) +'s }');
+        var id = self.getAttribute('data-id'); 
+    	_setStyle('slider-x[data-id="' + id + '"] slide-x.active{ transition: all ' + (_time/1000) +'s }' +
+                   'slider-x[data-id="' + id + '"] slide-x.to-left.next{ transition: all ' + (_time/1000) +'s }' +
+                   'slider-x[data-id="' + id + '"] slide-x.to-right.next{ transition: all ' + (_time/1000) +'s }' +
+    	           'slider-x[data-id="' + id + '"] slide-x { width: ' + (100/_countAactiveSlide) +'% }');
     };
 
 	// end METHODS -------------------------------------
@@ -145,13 +194,42 @@ SliderXPrototype.createdCallback = function() {
 
 	// PRIVATE METHODS ---------------------------------
 
-	_upper = function(word) {
+	function _upper(word) {
 		return word[1].toUpperCase();
-	}
+	};
 
 
 
-	_setStyle = function(cssText) {
+    function _pushNextIdx(){
+        var index = _activeSlidesIdx[_activeSlidesIdx.length-1] + 1;
+        _activeSlidesIdx.shift();
+
+        if(index > self.slideCount ){
+            index = 1;
+        }
+        _activeSlidesIdx.push( index );
+
+        return _activeSlidesIdx;
+    };
+
+
+
+    function _pushPrevIdx(){
+        var index = _activeSlidesIdx[0] - 1;
+        _activeSlidesIdx.pop();
+
+        if(index < 1){
+            index = self.slideCount;
+        }
+
+        _activeSlidesIdx.unshift(index)
+
+        return _activeSlidesIdx;
+    };
+
+
+
+	function _setStyle(cssText) {
     	var sheet = document.createElement('style');
     	sheet.type = 'text/css';
     	window.customSheet = sheet;
@@ -163,6 +241,27 @@ SliderXPrototype.createdCallback = function() {
         	return node;
     	})(cssText);
 	};
+
+
+
+    function _range(start, count) {
+        return Array.apply(0, Array( parseInt(count) ) )
+        .map(function (element, index) { 
+            return index + start;  
+        });
+    };
+
+
+
+    function _last(){
+        return _activeSlidesIdx[_activeSlidesIdx.length - 1];
+    };
+
+
+
+    function _first(){
+        return _activeSlidesIdx[0];
+    }
 
 	// end PRIVATE METHODS -----------------------------
 
@@ -382,7 +481,10 @@ SliderXIndicatorsPrototype.createdCallback = function() {
 		for(var i = 0; i < _sliderX.slideCount; i++){
 			self.addIndicator();
 		}
-        self.querySelector("slider-x-indicator:nth-child(" + _sliderX.getIndex() + ")").classList.add('active');
+
+        Array.prototype.forEach.call(_sliderX.getIndexes(), function(index){
+            self.querySelector("slider-x-indicator:nth-child(" + index + ")").classList.add('active');
+        });
 	}
 
 	// end INIT ----------------------------------------

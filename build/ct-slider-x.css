@@ -10,28 +10,23 @@ slider-x {
     position: relative;
     overflow: hidden; }
     slider-x slider-x-content slide-x {
-      width: 100%;
       height: 100%;
       position: absolute;
       top: 0px;
       display: none; }
+      slider-x slider-x-content slide-x img {
+        display: none;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; }
       slider-x slider-x-content slide-x.active {
-        left: 0px;
         display: block; }
-        slider-x slider-x-content slide-x.active.to-left {
-          left: -100%; }
-        slider-x slider-x-content slide-x.active.to-right {
-          left: 100%; }
       slider-x slider-x-content slide-x.to-left {
         display: block;
         left: 100%; }
-        slider-x slider-x-content slide-x.to-left.next {
-          left: 0%; }
       slider-x slider-x-content slide-x.to-right {
         display: block;
         left: -100%; }
-        slider-x slider-x-content slide-x.to-right.next {
-          left: 0%; }
 
 slider-x-indicators {
   display: flex;

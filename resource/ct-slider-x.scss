@@ -12,41 +12,30 @@ slider-x{
 		overflow: hidden;
 
 		slide-x{
-			width: 100%;
 			height: 100%;
 			position: absolute;
 			top: 0px;
 			display: none;
 
+            img{
+                display: none;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
 			&.active{
-				left: 0px;
 				display: block;
-
-				&.to-left{
-					left: -100%;
-				}
-
-				&.to-right{
-					left: 100%;
-				}
 			}
-			
+
 			&.to-left{
 				display: block;
 				left: 100%;
-
-				&.next{
-					left: 0%;
-				}
 			}
 
 			&.to-right{
 				display: block;
 				left: -100%;
-
-				&.next{
-					left: 0%;
-				}
 			}
 		}
 	}
