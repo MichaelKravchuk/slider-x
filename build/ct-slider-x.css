@@ -19,14 +19,8 @@ slider-x {
         width: 100%;
         height: 100%;
         object-fit: cover; }
-      slider-x slider-x-content slide-x.active {
+      slider-x slider-x-content slide-x.active, slider-x slider-x-content slide-x.to-left, slider-x slider-x-content slide-x.to-right {
         display: block; }
-      slider-x slider-x-content slide-x.to-left {
-        display: block;
-        left: 100%; }
-      slider-x slider-x-content slide-x.to-right {
-        display: block;
-        left: -100%; }
 
 slider-x-indicators {
   display: flex;

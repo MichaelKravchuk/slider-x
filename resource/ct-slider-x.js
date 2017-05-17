@@ -8,7 +8,7 @@ SliderXPrototype.createdCallback = function() {
         _countAactiveSlide = this.getAttribute('data-count') || 1,
 		_activeSlidesIdx = [],
         _nextActiveIdx = 1,
-		_prevActiveIdx = 1,
+		_prevActiveIdx = 0,
 		_isActive = false,
 		_time = 500; //ms
 
@@ -70,8 +70,8 @@ SliderXPrototype.createdCallback = function() {
 
 	this.setActive = function(type) {
         if(_isActive) return -1;
-        if(type == _first()) return 0;
-        
+        if(type == _center()) return 0;
+
         if(type == 'next'){
             _prevActiveIdx = _first();
             _pushNextIdx();
@@ -79,11 +79,23 @@ SliderXPrototype.createdCallback = function() {
             _prevActiveIdx = _last();
             _pushPrevIdx();
         } else if(Number.isInteger(type)){
-            _activeSlidesIdx = _range(type, _countAactiveSlide);
-            type = type > _first() ? 'next' : 'prev';
-            _activeSlidesIdx = type > _first() ? _first() : _last(); 
+            _prevActiveIdx = _first();
+            var split = (_countAactiveSlide / 2 - (_countAactiveSlide % 2 / 2));
+            var center = type - split + 1;
+            var count = center - _prevActiveIdx - split;
+            type = count > 0 ? 'next' : 'prev';
+            
+            if(type == 'next') self.next();
+            else self.prev();
+            
+            for(var i = 1; i < Math.abs(count); i++){
+                setTimeout(function(){
+                    if(type == 'next') self.next();
+                    else self.prev();
+                }, i * _time + i*2);
+            }
+         
         } else return -1;
-
         self.dispatchEvent( _setActive_( _first() ) );
 
     	_isActive = true;
@@ -108,8 +120,7 @@ SliderXPrototype.createdCallback = function() {
                 self.querySelector('slide-x:nth-of-type(' + _last() + ')').style.left = 100 - (100 / _countAactiveSlide) + '%';
             }, 50);
 
-        } else {
-            direction = 1;
+        } else if(type == 'prev') {
             classType = "to-right";
 
             self.querySelector('slide-x:nth-of-type(' + _prevActiveIdx + ')').style.left = '100%';
@@ -182,10 +193,12 @@ SliderXPrototype.createdCallback = function() {
     this.setTime = function(time) {
     	_time = time;
         var id = self.getAttribute('data-id'); 
-    	_setStyle('slider-x[data-id="' + id + '"] slide-x.active{ transition: all ' + (_time/1000) +'s }' +
-                   'slider-x[data-id="' + id + '"] slide-x.to-left.next{ transition: all ' + (_time/1000) +'s }' +
-                   'slider-x[data-id="' + id + '"] slide-x.to-right.next{ transition: all ' + (_time/1000) +'s }' +
-    	           'slider-x[data-id="' + id + '"] slide-x { width: ' + (100/_countAactiveSlide) +'% }');
+    	_setStyle('slider-x[data-id="' + id + '"] slide-x.active{ transition: all ' + (_time/1000) +'s linear}' +
+                  'slider-x[data-id="' + id + '"] slide-x.to-left{ left: 100% }' +
+                  'slider-x[data-id="' + id + '"] slide-x.to-left.next{ transition: all ' + (_time/1000) +'s linear}' +
+                  'slider-x[data-id="' + id + '"] slide-x.to-right{ left: -' + (100/_countAactiveSlide) +'% }' +
+                  'slider-x[data-id="' + id + '"] slide-x.to-right.next{ transition: all ' + (_time/1000) +'s linear}' +
+    	          'slider-x[data-id="' + id + '"] slide-x { width: ' + (100/_countAactiveSlide) +'% }');
     };
 
 	// end METHODS -------------------------------------
@@ -244,11 +257,23 @@ SliderXPrototype.createdCallback = function() {
 
 
 
-    function _range(start, count) {
+    function _range(start, count, center) {
         return Array.apply(0, Array( parseInt(count) ) )
-        .map(function (element, index) { 
-            return index + start;  
-        });
+            .map(function (element, index) { 
+                return index + start;  
+            });
+    };
+
+
+
+    function _first(){
+        return _activeSlidesIdx[0];
+    };
+
+
+
+    function _center(){
+        return _activeSlidesIdx[(_countAactiveSlide / 2 - (_countAactiveSlide % 2 / 2))];
     };
 
 
@@ -256,13 +281,7 @@ SliderXPrototype.createdCallback = function() {
     function _last(){
         return _activeSlidesIdx[_activeSlidesIdx.length - 1];
     };
-
-
-
-    function _first(){
-        return _activeSlidesIdx[0];
-    }
-
+    
 	// end PRIVATE METHODS -----------------------------
 
 

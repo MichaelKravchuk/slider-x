@@ -24,18 +24,10 @@ slider-x{
                 object-fit: cover;
             }
 
-			&.active{
+			&.active,
+            &.to-left,
+            &.to-right{
 				display: block;
-			}
-
-			&.to-left{
-				display: block;
-				left: 100%;
-			}
-
-			&.to-right{
-				display: block;
-				left: -100%;
 			}
 		}
 	}
